@@ -21,8 +21,8 @@ service TravelBook{
 
 message Point{
 
-  int32 long = 1;
-  int32 lat = 2;
+  int32 Latitude = 1;
+  int32 Longitude = 2;
 }
 
 message Feature{
