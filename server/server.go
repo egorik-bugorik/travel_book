@@ -120,11 +120,14 @@ func (s *routeGuideServer) RecordRoute(stream travelbook.TravelBook_RecordRouteS
 		point, err := stream.Recv()
 		if err == io.EOF {
 
+			println("End of recieving!!!!!!!!!!!")
+			endTime := time.Now()
+			end := int32(endTime.Sub(tim).Microseconds())
 			return stream.SendAndClose(&travelbook.RouteSummary{
 				PointCount:   pointCount,
 				FeatureCount: featureCount,
-				ElapsedTime:  int32(tim.Sub(time.Now()).Seconds()),
-				Distance:     0,
+				ElapsedTime:  end,
+				Distance:     distance,
 			})
 		}
 		if err != nil {
@@ -166,7 +169,7 @@ func calcDistance(p1 *travelbook.Point, p2 *travelbook.Point) int32 {
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 
 	distance := R * c
-	return int32(distance)
+	return int32(distance) / 100000
 }
 func (s *routeGuideServer) RouteChat(stream travelbook.TravelBook_RouteChatServer) error {
 	for {

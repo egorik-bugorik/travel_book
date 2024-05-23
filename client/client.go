@@ -25,29 +25,53 @@ func main() {
 		Longitude: -746143763,
 	})
 
-	traversePoint(client)
-	featureInsideRectangle(client, &travelbook.Rectangle{
-		Lo: &travelbook.Point{
-			Latitude:  407838000,
-			Longitude: -746143000,
-		},
-		Hi: &travelbook.Point{
-			Latitude:  409838000,
-			Longitude: -736143000,
-		},
-	})
+	traverseRoute(client)
+	//featureInsideRectangle(client, &travelbook.Rectangle{
+	//	Lo: &travelbook.Point{
+	//		Latitude:  407838000,
+	//		Longitude: -746143000,
+	//	},
+	//	Hi: &travelbook.Point{
+	//		Latitude:  409838000,
+	//		Longitude: -736143000,
+	//	},
+	//})
 
 }
 
 func traverseRoute(client travelbook.TravelBookClient) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 
+	defer cancel()
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	stream, err := client.RecordRoute(ctx)
+	var points []*travelbook.Point
+	for i := 0; i < r.Intn(100)+2; i++ {
+		points = append(points, randomPoint())
+	}
 	if err != nil {
-		log.Fatalf("Error while traversing route features with RECT ::: %v", err)
+		log.Fatalf("Error while connecting to traverseroute grpc features  ::: %v", err)
 
 	}
-	defer cancel()
+	for _, point := range points {
+		point = randomPoint()
+		err := stream.Send(point)
+		if err != nil {
+			log.Fatalf("Error while travers point ::: %v", err)
+
+		}
+
+		log.Printf("\n%d points has been registred successfully!!!", len(points))
+	}
+
+	println("end of sending!!!!")
+	time.Sleep(time.Second * 5)
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("Error while recieving routeSummary ::: %v", err)
+
+	}
+	log.Printf("\n \t::: RESULT SUMMARY :::\n \t %v", res)
 
 }
 
